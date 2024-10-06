@@ -1,0 +1,18 @@
+:root {
+    --deep-brown: #5D4037;
+    --light-brown: #8D6E63;
+    --forest-green: #2E7D32;
+    --sage-green: #81C784;
+    --cream: #F5F5DC;
+    --text-color: #2D1810;
+    --background-color: #F8F4E3;
+}
+
+
+
+body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: var(--background-color);
+}
