@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>漫畫閱讀網站</title>
+    <style>
+        /* 重置樣式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: '微軟正黑體', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* 導航欄樣式 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem;
+            z-index: 1000;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .navbar-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .menu-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: inherit;
+            transition: background-color 0.3s;
+        }
+
+        .menu-button:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            border-radius: 50%;
+        }
+
+        /* 側邊選單樣式 */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background-color: white;
+            box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            z-index: 900;
+            padding-top: 80px;
+        }
+
+        .side-menu.open {
+            left: 0;
+        }
+
+        .chapter-list {
+            list-style: none;
+            padding: 1rem;
+        }
+
+        .chapter-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .chapter-list button {
+            width: 100%;
+            text-align: left;
+            padding: 0.8rem 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            color: inherit;
+            transition: background-color 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .chapter-list button:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* 主要內容區域 */
+        .main-content {
+            max-width: 1000px;
+            margin: 80px auto 2rem;
+            padding: 0 1rem;
+        }
+
+        .chapter {
+            margin-bottom: 2rem;
+        }
+
+        .chapter-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            padding: 1rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .manga-page {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .manga-page img {
+            max-width: 100%;
+            height: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 4px;
+        }
+
+        /* 返回頂部按鈕 */
+        .back-to-top {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            cursor: pointer;
+            display: none;
+            color: inherit;
+            transition: background-color 0.3s;
+        }
+
+        .back-to-top:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* 深色模式 */
+        body.dark-mode {
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        body.dark-mode .navbar,
+        body.dark-mode .side-menu,
+        body.dark-mode .chapter-title {
+            background-color: #2d2d2d;
+            color: #ffffff;
+        }
+
+        body.dark-mode .menu-button:hover,
+        body.dark-mode .chapter-list button:hover,
+        body.dark-mode .back-to-top:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark-mode .back-to-top {
+            background-color: #2d2d2d;
+        }
+
+        /* 遮罩層 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0);
+            pointer-events: none;
+            transition: background-color 0.3s;
+            z-index: 899;
+        }
+
+        .overlay.active {
+            background-color: rgba(0, 0, 0, 0.5);
+            pointer-events: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="navbar-content">
+            <div style="display: flex; align-items: center; gap: 1rem;">
+                <button id="menuButton" class="menu-button">☰</button>
+                <span style="font-weight: bold;">我的漫畫</span>
+            </div>
+            <button id="darkModeToggle" class="menu-button">🌙</button>
+        </div>
+    </nav>
+
+    <!-- 遮罩層 -->
+    <div id="overlay" class="overlay"></div>
+
+    <!-- 側邊選單 -->
+    <div id="sideMenu" class="side-menu">
+        <ul class="chapter-list">
+            <li><button onclick="scrollToChapter('chapter1')">第一話：開始</button></li>
+            <li><button onclick="scrollToChapter('chapter2')">第二話：相遇</button></li>
+            <li><button onclick="scrollToChapter('chapter3')">第三話：冒險</button></li>
+            <li><button onclick="scrollToChapter('chapter4')">第四話：挑戰</button></li>
+        </ul>
+    </div>
+
+    <!-- 主要內容 -->
+    <main class="main-content">
+        <div id="chapter1" class="chapter">
+            <h2 class="chapter-title">第一話：開始</h2>
+            <div class="manga-page">
+                <img src="章節1/頁面1.jpg" alt="第1頁">
+            </div>
+            <div class="manga-page">
+                <img src="章節1/頁面2.jpg" alt="第2頁">
+            </div>
+        </div>
+
+        <div id="chapter2" class="chapter">
+            <h2 class="chapter-title">第二話：相遇</h2>
+            <div class="manga-page">
+                <img src="章節2/頁面1.jpg" alt="第1頁">
+            </div>
+            <div class="manga-page">
+                <img src="章節2/頁面2.jpg" alt="第2頁">
+            </div>
+        </div>
+    </main>
+
+    <!-- 返回頂部按鈕 -->
+    <button id="backToTop" class="back-to-top">↑</button>
+
+    <script>
+        // 獲取元素
+        const menuButton = document.getElementById('menuButton');
+        const sideMenu = document.getElementById('sideMenu');
+        const overlay = document.getElementById('overlay');
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const backToTop = document.getElementById('backToTop');
+
+        // 檢查並載入深色模式設置
+        if (localStorage.getItem('darkMode') === 'true') {
+            document.body.classList.add('dark-mode');
+            darkModeToggle.textContent = '☀️';
+        }
+
+        // 開啟選單
+        function openMenu() {
+            sideMenu.classList.add('open');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // 關閉選單
+        function closeMenu() {
+            sideMenu.classList.remove('open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // 選單按鈕點擊事件
+        menuButton.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (sideMenu.classList.contains('open')) {
+                closeMenu();
+            } else {
+                openMenu();
+            }
+        });
+
+        // 遮罩層點擊關閉選單
+        overlay.addEventListener('click', closeMenu);
+
+        // 滾動到指定章節
+        function scrollToChapter(chapterId) {
+            const chapter = document.getElementById(chapterId);
+            const offset = 80; // 導航欄高度
+            const targetPosition = chapter.offsetTop - offset;
+            
+            window.scrollTo({
+                top: targetPosition,
+                behavior: 'smooth'
+            });
+            
+            closeMenu();
+        }
+
+        // 深色模式切換
+        darkModeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDarkMode = document.body.classList.contains('dark-mode');
+            darkModeToggle.textContent = isDarkMode ? '☀️' : '🌙';
+            localStorage.setItem('darkMode', isDarkMode);
+        });
+
+        // 返回頂部按鈕顯示/隱藏
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTop.style.display = 'block';
+            } else {
+                backToTop.style.display = 'none';
+            }
+        });
+
+        // 返回頂部
+        backToTop.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+</body>
+</html>
